@@ -24,11 +24,27 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.sharp.*
+import androidx.compose.material.icons.sharp.ModeNight
+import androidx.compose.material.icons.sharp.NotificationsNone
+import androidx.compose.material.icons.sharp.Pause
+import androidx.compose.material.icons.sharp.PlayArrow
+import androidx.compose.material.icons.sharp.Refresh
+import androidx.compose.material.icons.sharp.WbSunny
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -156,7 +172,7 @@ class MainActivity : AppCompatActivity() {
                     contentDescription = "reset",
                     size = 20.dp
                 ) {
-                    Toast.makeText(baseContext, "Cooming Soon..", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Coming Soon..", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -180,8 +196,8 @@ class MainActivity : AppCompatActivity() {
             ) {
                 Text(
                     String.format("%02d", viewModel.hour.value) + ":" +
-                            String.format("%02d", viewModel.minute.value) + ":" +
-                            String.format("%02d", viewModel.seconds.value),
+                        String.format("%02d", viewModel.minute.value) + ":" +
+                        String.format("%02d", viewModel.seconds.value),
                     modifier = Modifier.wrapContentSize(align = Alignment.Center),
                     style = TextStyle(fontSize = 20.sp)
                 )
@@ -191,19 +207,22 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     fun ColouredOutline(undonePercent: Float = 0f) {
-        Canvas(modifier = Modifier, onDraw = {
-            drawRect(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Green, Color.Yellow, Color.Red
+        Canvas(
+            modifier = Modifier,
+            onDraw = {
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Green, Color.Yellow, Color.Red
+                        ),
+                        startY = 0f,
+                        endY = size.height
                     ),
-                    startY = 0f,
-                    endY = size.height
-                ),
-                topLeft = Offset(0f, (1 - undonePercent) * size.height),
-                size = Size(size.width, undonePercent * size.height)
-            )
-        })
+                    topLeft = Offset(0f, (1 - undonePercent) * size.height),
+                    size = Size(size.width, undonePercent * size.height)
+                )
+            }
+        )
     }
 
     override fun onDestroy() {
