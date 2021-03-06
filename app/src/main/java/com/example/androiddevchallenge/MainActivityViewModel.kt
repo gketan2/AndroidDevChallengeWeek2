@@ -11,9 +11,13 @@ class MainActivityViewModel : ViewModel() {
     val hour = mutableStateOf(0L)
     val minute = mutableStateOf(1L)
     val seconds = mutableStateOf(0L)
+    val milliSeconds = mutableStateOf(0L)
 
-    val timerState = mutableStateOf(TimerState.Pause)
+    val timerState = mutableStateOf(TimerState.Reset)
     val editState = mutableStateOf(true)
+    val undonePercent = mutableStateOf(0F)
+
+    private var totalMillis = 0L
 
     private var timer: CountDownTimer? = null
 
@@ -31,7 +35,7 @@ class MainActivityViewModel : ViewModel() {
 
     private fun startTimer() {
 
-        if (hour.value == 0L && minute.value == 0L && seconds.value == 0L) {
+        if (hour.value == 0L && minute.value == 0L && seconds.value == 0L && milliSeconds.value == 0L) {
             //go to reset state
             timerState.value = TimerState.Reset
             editState.value = true
@@ -48,12 +52,13 @@ class MainActivityViewModel : ViewModel() {
                 pauseTimer()
             }
             TimerState.Pause -> {
-                startTimerWith(hour.value, minute.value, seconds.value)
+                startTimerWith(60*60*1000*hour.value + 60*1000*minute.value + 1000*seconds.value + milliSeconds.value)
                 timerState.value = TimerState.Play
                 editState.value = false
             }
             TimerState.Reset -> {
-                startTimerWith(hour.value, minute.value, seconds.value)
+                totalMillis = 60*60*1000*hour.value + 60*1000*minute.value + 1000*seconds.value + milliSeconds.value
+                startTimerWith(totalMillis)
                 timerState.value = TimerState.Play
                 editState.value = false
             }
@@ -74,22 +79,29 @@ class MainActivityViewModel : ViewModel() {
         minute.value = 1
         seconds.value = 0
 
+        totalMillis = 0
+
         timerState.value = TimerState.Reset
         editState.value = true
+        undonePercent.value = 0f
     }
 
     var tempMinute = 0L
     var tempSeconds = 0L
-    private fun startTimerWith(h: Long, m: Long, s: Long) {
+    private fun startTimerWith(millis: Long) {
         timer?.cancel()
-        timer = object : CountDownTimer(s * 1000 + m * 60 * 1000 + h * 60 * 60 * 1000, 1) {
+        timer = object : CountDownTimer(millis, 1) {
             override fun onTick(millisUntilFinished: Long) {
                 //set in mutable state
+                milliSeconds.value = millisUntilFinished % 1000 //milliseconds
                 tempSeconds = millisUntilFinished / 1000 //seconds + minute + hour
                 tempMinute = tempSeconds / 60 //minutes+hour
                 hour.value = tempMinute / 60 //hour
                 minute.value = tempMinute % 60
                 seconds.value = tempSeconds % 60
+
+                //set sweep angle
+                undonePercent.value = millisUntilFinished/totalMillis.toFloat()
             }
 
             override fun onFinish() {

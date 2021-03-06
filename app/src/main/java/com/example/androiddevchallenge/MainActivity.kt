@@ -16,11 +16,13 @@
 package com.example.androiddevchallenge
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -30,10 +32,12 @@ import androidx.compose.material.icons.sharp.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,25 +63,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     @ExperimentalAnimationApi
-    @Preview("Light Theme", widthDp = 360, heightDp = 640)
-    @Composable
-    fun LightPreview() {
-        MyTheme {
-            MyApp()
-        }
-    }
-
-    @ExperimentalAnimationApi
-    @Preview("Dark Theme", widthDp = 360, heightDp = 640)
-    @Composable
-    fun DarkPreview() {
-        MyTheme(darkTheme = true) {
-            MyApp(backgroundColor = MaterialTheme.colors.background)
-        }
-    }
-
-    // Start building your app here!
-    @ExperimentalAnimationApi
     @Composable
     fun MyApp(backgroundColor: Color = Color.White) {
         ConstraintLayout(
@@ -87,13 +72,12 @@ class MainActivity : AppCompatActivity() {
                 val pickerSet = createRefFor("picker_wrapper")
                 val themeSet = createRefFor("theme_button")
                 constrain(bottomRowSet) {
-                    bottom.linkTo(parent.bottom, 16.dp)
+                    bottom.linkTo(parent.bottom, 24.dp)
                     start.linkTo(parent.start, 8.dp)
                     end.linkTo(parent.end, 8.dp)
                 }
                 constrain(timerSet) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(pickerSet.top)
+                    top.linkTo(parent.top, 80.dp)
                     start.linkTo(parent.start, 8.dp)
                     end.linkTo(parent.end, 8.dp)
                 }
@@ -113,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                 .fillMaxSize()
         ) {
             ImageButton(
-                imageVector = if(viewModel.isDarkTheme.value) Icons.Sharp.WbSunny else Icons.Sharp.ModeNight,
+                imageVector = if (viewModel.isDarkTheme.value) Icons.Sharp.WbSunny else Icons.Sharp.ModeNight,
                 contentDescription = "theme",
                 size = 20.dp,
                 modifier = Modifier.layoutId("theme_button")
@@ -167,12 +151,17 @@ class MainActivity : AppCompatActivity() {
                         viewModel.toggleTimeState()
                     }
                 )
-                Spacer(modifier = Modifier.width(20.dp))
+                ImageButton(
+                    imageVector = Icons.Sharp.NotificationsNone,
+                    contentDescription = "reset",
+                    size = 20.dp
+                ) {
+                    Toast.makeText(baseContext, "Cooming Soon..", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
-    @Preview
     @Composable
     fun TimerCounter(modifier: Modifier = Modifier, size: Dp = 150.dp) {
         Box(contentAlignment = Alignment.Center, modifier = modifier) {
@@ -181,7 +170,9 @@ class MainActivity : AppCompatActivity() {
                 shape = CircleShape,
                 elevation = 0.dp,
                 color = MaterialTheme.colors.primaryVariant
-            ) {}
+            ) {
+                ColouredOutline(viewModel.undonePercent.value)
+            }
             Card(
                 modifier = Modifier.size(size.times(0.75F)),
                 shape = CircleShape,
@@ -196,6 +187,23 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    @Composable
+    fun ColouredOutline(undonePercent: Float = 0f) {
+        Canvas(modifier = Modifier, onDraw = {
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Green, Color.Yellow, Color.Red
+                    ),
+                    startY = 0f,
+                    endY = size.height
+                ),
+                topLeft = Offset(0f, (1 - undonePercent) * size.height),
+                size = Size(size.width, undonePercent * size.height)
+            )
+        })
     }
 
     override fun onDestroy() {
